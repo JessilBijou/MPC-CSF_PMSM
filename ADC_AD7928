@@ -1,42 +1,39 @@
-
 //--------------------------------------------------------------------------------------------------------
-// 模块: adc_ad7928
+// Module: adc_ad7928
 // Type    : synthesizable
 // Standard: Verilog 2001 (IEEE1364-2001)
-// 功能：通过 SPI 接口从 ADC7928 (ADC芯片) 中读出 ADC 值。
-// 参数：详见下方注释，该模块可以使用参数完全自由地配置单次转换要用多少个通道以及用哪些通道
-// 输入输出：详见下方注释
+// Function: Read ADC values from ADC7928 (ADC chip) via SPI interface.
+// Parameters: See comments below, this module can be configured freely for how many channels to use for a single conversion and which channels to use.
+// Input/Output: See comments below
 //--------------------------------------------------------------------------------------------------------
 
 module adc_ad7928 #(
-    parameter [2:0] CH_CNT = 3'd7,  // 单次 ADC 转换使用的通道数为 CH_CNT+1，例如若 CH_CNT=0，则只使用 CH0 。若 CH_CNT=2，则使用 CH0,CH1,CH2。 若 CH_CNT=7，则使用 CH0,CH1,CH2,CH3,CH4,CH5,CH6,CH7。用的通道越多，ADC转换时延越长（即从 sn_adc 到 en_adc 之间的时间差越长）
-    parameter [2:0] CH0 = 3'd0,     // 指示了 CH0 对应 AD7928 的哪个通道
-    parameter [2:0] CH1 = 3'd1,     // 指示了 CH1 对应 AD7928 的哪个通道
-    parameter [2:0] CH2 = 3'd2,     // 指示了 CH2 对应 AD7928 的哪个通道
-    parameter [2:0] CH3 = 3'd3,     // 指示了 CH3 对应 AD7928 的哪个通道
-    parameter [2:0] CH4 = 3'd4,     // 指示了 CH4 对应 AD7928 的哪个通道
-    parameter [2:0] CH5 = 3'd5,     // 指示了 CH5 对应 AD7928 的哪个通道
-    parameter [2:0] CH6 = 3'd6,     // 指示了 CH6 对应 AD7928 的哪个通道
-    parameter [2:0] CH7 = 3'd7      // 指示了 CH7 对应 AD7928 的哪个通道
+    parameter [2:0] CH_CNT = 3'd7,
+    parameter [2:0] CH0 = 3'd0,
+    parameter [2:0] CH1 = 3'd1,
+    parameter [2:0] CH2 = 3'd2,
+    parameter [2:0] CH3 = 3'd3,
+    parameter [2:0] CH4 = 3'd4,
+    parameter [2:0] CH5 = 3'd5,
+    parameter [2:0] CH6 = 3'd6,
+    parameter [2:0] CH7 = 3'd7
 ) (
     input  wire        rstn,
     input  wire        clk,
-    // -------------------- SPI 接口，应该接到 AD7928 芯片上   ---------------------------------------------------------------
-    output reg         spi_ss,      // SPI 接口：SS
-    output reg         spi_sck,     // SPI 接口：SCK
-    output reg         spi_mosi,    // SPI 接口：MOSI
-    input  wire        spi_miso,    // SPI 接口：MISO
-    // -------------------- 用户逻辑接口  ------------------------------------------------------------------------------------
-    input  wire        i_sn_adc,    // ADC 转换开始信号，当 i_sn_adc 上出现高电平脉冲时，ADC转换开始
-    output reg         o_en_adc,    // ADC 转换完成信号，当转换完成时，o_en_adc 产生一个时钟周期的高电平脉冲
-    output wire [11:0] o_adc_value0,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH0 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value1,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH1 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value2,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH2 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value3,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH3 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value4,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH4 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value5,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH5 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value6,// 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH6 的 ADC 转换结果出现在该信号上
-    output wire [11:0] o_adc_value7 // 当 o_en_adc 产生一个时钟周期的高电平脉冲时，CH7 的 ADC 转换结果出现在该信号上
+    output reg         spi_ss,
+    output reg         spi_sck,
+    output reg         spi_mosi,
+    input  wire        spi_miso,
+    input  wire        i_sn_adc,
+    output reg         o_en_adc,
+    output wire [11:0] o_adc_value0,
+    output wire [11:0] o_adc_value1,
+    output wire [11:0] o_adc_value2,
+    output wire [11:0] o_adc_value3,
+    output wire [11:0] o_adc_value4,
+    output wire [11:0] o_adc_value5,
+    output wire [11:0] o_adc_value6,
+    output wire [11:0] o_adc_value7
 );
 
 localparam WAIT_CNT = 8'd6;
@@ -115,7 +112,6 @@ always @ (posedge clk or negedge rstn)
             cnt <= 8'd0;
         end
     end
-
 
 always @ (posedge clk or negedge rstn)
     if(~rstn) begin
